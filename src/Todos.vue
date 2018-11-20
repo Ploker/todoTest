@@ -1,22 +1,20 @@
 <template>
     <div id="todos" class="todos">
-        <form class="add-form" @submit.prevent="addTodos()">
-            <input type="text" class="addTitle" v-model="todo.title" placeholder="Title">
-            <input type="checkbox" name="completed" v-model='todo.completed' >
-            <label for="completed">completed</label>
-            <button class="addTodo" >Add Totos</button>
-        </form>
+        <div class="add-form">
+            <button class="addTodo" @click="toTodosForm(todo)" >Add Totos</button>
+        </div>
+        
         <div class="todo" v-for="(todo,index) in todos" >
             <div class="info-line" :class="{'line-done': todo.completed}"></div>
             <p class="title" v-if="!todo.updateMod" :class="{'title-done': todo.completed}">{{todo.title}}</p>
             <input type="text" v-if="todo.updateMod" v-model="todo.title">
             <div class="wrap-btns">
                 <button  class="btnn del" @click="delTodo(todo.id,index)" >delete</button>
-                <button  class="btnn update" @click="updateTodo(todo)">update</button>
+                <button  class="btnn update" @click="toTodosForm(todo,true)">update</button>
                 <button class="btnn conpleted" @click="completed(todo.id)">completed</button>
             </div>
         </div>
-        <TodosFrorm v-if="todoUpdate.updateMod" :todoUpdate='todoUpdate' @toUpdatee="toUpdate" @closeUpdate="closeUpdate"></TodosFrorm>
+        <TodosFrorm v-if="todoUpdate.formOn" :todoUpdate='todoUpdate' @addTodo="addTodos" @toUpdatee="toUpdate" @closeUpdate="closeUpdate"></TodosFrorm>
     </div>
     
 
@@ -41,6 +39,7 @@ export default {
                 id: 0,
                 title: '',
                 completed: false,
+                formOn: false,
                 updateMod: false
             },
             serverUrl: 'https://jsonplaceholder.typicode.com/todos',
@@ -51,11 +50,12 @@ export default {
         this.getAllTodos();
     },
     methods:{
-        addTodos(){
-            this.$http.post(this.serverUrl,this.todo).then((res) => {
+        addTodos(todo){
+            this.$http.post(this.serverUrl,todo).then((res) => {
                 this.todos.push(res.data);
-                this.todo.title = '';
-                this.todo.completed = false;
+                todo.title = '';
+                todo.completed = false;
+                this.todoUpdate.formOn = false;
             },(err) => {
                 console.log(err);
             });
@@ -67,21 +67,26 @@ export default {
                 console.log(err);
             });
         },
-        updateTodo(todo){
+        toTodosForm(todo,updateMod = false){
             this.todoUpdate.id = todo.id;
             this.todoUpdate.title = todo.title;
             this.todoUpdate.completed = todo.completed;
-            this.todoUpdate.updateMod = true;
+            this.todoUpdate.updateMod = updateMod;
+            this.todoUpdate.formOn = true;
         },
+
         toUpdate(todoUpdate){
             let res = this.todos.find(e => e.id == todoUpdate.id);            
             res.title = todoUpdate.title;
             res.completed = todoUpdate.completed;
             this.todoUpdate.updateMod = false;
+            this.todoUpdate.formOn = false;
         },
+
         closeUpdate(){
-            this.todoUpdate.updateMod = false;
+            this.todoUpdate.formOn = false;
         },
+
         completed(id){
             var res = this.todos.find(e => e.id == id);
             res.completed = !res.completed;

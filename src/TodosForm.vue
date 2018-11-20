@@ -1,10 +1,11 @@
 <template>
     <div class="wrap-form">
-        <form class="update-form" @submit.prevent="updateTodo()">
+        <form class="update-form" @submit.prevent="todoUpdate.updateMod ? updateTodo() : addTodo() ">
             <input type="text" class="addTitle" v-model="todoUpdate.title" placeholder="Title">
             <input type="checkbox" name="completed" v-model='todoUpdate.completed' >
             <label class="whiteTixt" for="completed">completed</label>
-            <button class="addTodo" type="submit" >Add Totos</button>
+            <button class="addTodo" v-if="todoUpdate.updateMod" type="submit" >Update</button>
+            <button class="addTodo" v-if="!todoUpdate.updateMod" type="submit" >Add todos</button>
             <button class="addTodo red" type="button" @click="close()" >Close</button>
         </form>
     </div>
@@ -13,10 +14,16 @@
 <script>
 export default {
     name: 'todosForm',
-    props:['todoUpdate'],
+    // props:['todoUpdate', 'updateMod'],
+    props: {
+        todoUpdate: Object,
+    },
     methods:{
         updateTodo(){
             this.$emit('toUpdatee',this.todoUpdate);
+        },
+        addTodo(){
+            this.$emit('addTodo',this.todoUpdate);
         },
         close(){
             this.$emit('closeUpdate');
